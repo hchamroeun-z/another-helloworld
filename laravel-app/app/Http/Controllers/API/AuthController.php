@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\User\SigninRequest;
+use App\Http\Requests\User\SignupRequest;
+use App\Http\Resources\User\UserResource;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -11,12 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    function signup(Request $request){
-    $request->validate([
-        'name'=>'required|string|max:100',
-        'email'=>'required|email|unique:users,email',
-        'password'=>'required|string|min:6|max:10|confirmed'
-    ]);
+    function signup(SignupRequest $request){
+
     $user=User::create([
         'name'=>$request->name,
         'email'=>$request->email,
@@ -24,23 +23,19 @@ class AuthController extends Controller
     ]);
     return response([
         'message'=>'user created successfully',
-        'user'=>$user
+        'user'=>new UserResource($user)
     ],201);
     }
 
-    function signin(Request $request){
-        $request->validate([
-            'email'=>'required|email|exists:users,email',
-            'password'=>'required|string|min:6|max:6'
-        ]);
+    function signin(SigninRequest $request){
         $user=User::where('email',$request->email)->first();
         if(!Hash::check($request->password,$user->password)){
-            throw ValidationException::withMessage(['password'=>'password does not match.']);
+            throw ValidationException::withMessages(['password'=>'password does not match.']);
         }
         $token=$user->createToken('auth_token')->plainTextToken;
         return response([
             'message'=>'User log in',
-            'user' => $user,
+            'user' => new UserResource($user),
             'token' => $token
         ],200);
     }
@@ -55,7 +50,7 @@ class AuthController extends Controller
     function verify(Request $request){
                 return response([
             'message' => 'Token is valid.',
-            'user' => $request->user()
+            'user' => new UserResource($request->user()) 
         ], 200);
 
     }
