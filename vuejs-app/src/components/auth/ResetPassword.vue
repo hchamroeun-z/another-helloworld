@@ -3,17 +3,19 @@
         <div class="login-box">
             <div class="card card-outline card-primary">
                 <div class="card-header text-center">
-                    <RouterLink to="/" class="h1"><b>Admin</b>LTE</RouterLink>
+                    <router-link to="/" class="h1"><b>Admin</b>LTE</router-link>
                 </div>
                 <div class="card-body">
-                    <p class="login-box-msg">Sign in to start your session</p>
-                    <form @submit.prevent="signIn">
+                    <p class="login-box-msg">
+                        Enter your email to receive a password reset link
+                    </p>
+                    <form @submit.prevent="sendResetPasswordEmail">
                         <div class="input-group mb-3">
                             <input
-                                type="email"
                                 v-model="user.email"
+                                :class="{ 'is-invalid': !!userError.email }"
+                                type="email"
                                 class="form-control"
-                                :class="{'is-invalid':!!userError.email}"
                                 placeholder="Email"
                             />
                             <div class="input-group-append">
@@ -25,24 +27,6 @@
                                 {{ userError.email }}
                             </div>
                         </div>
-                        <div class="input-group mb-3">
-                            <input
-                                type="password"
-                                v-model="user.password"
-                                class="form-control"
-                                :class="{'is-invalid':!!userError.password}"
-                                placeholder="Password"
-                                autocomplete
-                            />
-                            <div class="input-group-append">
-                                <div class="input-group-text">
-                                    <span class="fas fa-lock"></span>
-                                </div>
-                            </div>
-                            <div class="invalid-feedback">
-                                {{ userError.password }}
-                            </div>
-                        </div>
                         <div class="row">
                             <div class="col-8"></div>
                             <div class="col-4">
@@ -50,23 +34,24 @@
                                     type="submit"
                                     class="btn btn-primary btn-block"
                                 >
-                                    Sign In
+                                    Send Link
                                 </button>
                             </div>
                         </div>
                     </form>
-                    <p class="mb-0">
-                        <RouterLink
-                            :to="{ name: 'auth.signup' }"
+
+                    <p class="mb-1">
+                        <router-link
+                            :to="{ name: 'auth.signin' }"
                             class="text-center"
-                            >Register a new membership</RouterLink
+                            >Go back to login</router-link
                         >
                     </p>
                     <p class="mb-0">
                         <router-link
-                            :to="{ name: 'auth.reset-password' }"
+                            :to="{ name: 'auth.signup' }"
                             class="text-center"
-                            >Forgot your password?</router-link
+                            >Register a new membership</router-link
                         >
                     </p>
                 </div>
@@ -74,48 +59,36 @@
         </div>
     </div>
 </template>
-
 <script setup>
-    import { apiSignin } from '@/functions/api/auth';
-    import { CloseModal, LoadingModal, MessageModal } from '@/functions/swal';
-    import { useRouter } from 'vue-router';
-    import { reactive } from 'vue';
-    import { useUserStore } from '@/stores/user';
-
-    const router =useRouter();
-    const userStore=useUserStore();
+import { apiSendResetPasswordEmail } from '@/functions/api/auth';
+import { CloseModal, LoadingModal, MessageModal } from '@/functions/swal';
+import { reactive } from 'vue';
 
     const user = reactive({
         email: "",
-        password: "",
     });
 
     const userError = reactive({
         email: "",
-        password: "",
     });
 
-    const defaultUser=JSON.parse(JSON.stringify(user));
-    const defaultUserError=JSON.parse(JSON.stringify(userError));
+    const defaultUser = JSON.parse(JSON.stringify(user));
+    const defaultUserError = JSON.parse(JSON.stringify(userError));
 
-    function resetAllState(){
-        Object.assign(user,defaultUser);
-        Object.assign(userError,defaultUserError);
+    function resetAllState() {
+        Object.assign(user, defaultUser);
+        Object.assign(userError, defaultUserError);
     }
-
-    async function signIn() {
+    async function sendResetPasswordEmail() {
         try {
-        
-        LoadingModal("Signing in ...");
-        const response=await apiSignin(user);
-        const { data } = response;
-
-        userStore.setState(data.user);
-        userStore.setSanctumToken(data.token);
-        
-        resetAllState();
-        router.replace({name:"dashboard"});
-        return CloseModal();
+            LoadingModal();
+            const response=await apiSendResetPasswordEmail(user.email);
+            resetAllState();
+            return MessageModal({
+            icon: "success",
+            title: "Success",
+            text: response.data.message,
+        });
         } catch (error) {
             const { response } = error;
         if (!response) {
@@ -137,7 +110,6 @@
             title: "Error",
             text: data.message,
         });
-
         }
     }
 </script>
