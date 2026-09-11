@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\User\SendVerificationEmailRequest;
 use App\Http\Requests\User\SigninRequest;
 use App\Http\Requests\User\SignupRequest;
 use App\Http\Resources\User\UserResource;
@@ -22,6 +23,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => $request->password
         ]);
+         $user->sendEmailVerificationNotification($request->callback_url);
         return response([
             'message' => 'user created successfully',
             'user' => new UserResource($user)
@@ -55,6 +57,36 @@ class AuthController extends Controller
         return response([
             'message' => 'Token is valid.',
             'user' => new UserResource($request->user())
+        ], 200);
+
+    }
+    
+    function verifyEmail(Request $request)
+    {
+        $user = User::findOrFail($request->route('id'));
+
+        if ($user->hasVerifiedEmail()) {
+            throw ValidationException::withMessages([
+                'email' => 'Email is already verified.',
+            ]);
+        }
+
+        $user->markEmailAsVerified();
+
+        return response([
+            'message' => 'Email verified successfully.'
+        ], 200);
+    }
+
+    function sendEmailVerificationEmail(SendVerificationEmailRequest $request){
+        $user = User::where('email', $request->email)->first();
+        if($user->hasVerifiedEmail()){
+            throw ValidationException::withMessages(['email'=> "Email has verified!"]);
+        }
+        $user->sendEmailVerificationNotification($request->callback_url);
+
+         return response([
+            'message' => 'Verification email resent.'
         ], 200);
 
     }

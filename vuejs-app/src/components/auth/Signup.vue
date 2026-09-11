@@ -98,6 +98,21 @@
                             >I already have an account</RouterLink
                         >
                     </p>
+                    <hr />
+                    <div v-if="signedUpEmail" class="mt-3">
+                        <p>
+                            Signed up with <strong>{{ signedUpEmail }}</strong>
+                        </p>
+                        <p class="mb-3">
+                            Didn't receive the verification email?
+                        </p>
+                        <button
+                            @click="sendVerificationEmail"
+                            class="btn btn-secondary btn-block"
+                        >
+                            Resend Verification Email
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -105,9 +120,9 @@
 </template>
 
 <script setup>
-import { apiSignup } from '@/functions/api/auth';
+import { apiSendVerificationEmail, apiSignup } from '@/functions/api/auth';
 import { LoadingModal, MessageModal,CloseModal } from '@/functions/swal';
-import { reactive } from 'vue';
+import { reactive,ref } from 'vue';
 import { useRouter } from 'vue-router';
 
     const router=useRouter();
@@ -133,9 +148,11 @@ import { useRouter } from 'vue-router';
         Object.assign(userError, defaultUserError);
     }
     async function signUp() {
+        resetSignedUpEmail();
         try {
             LoadingModal("Signing up ...");
             await apiSignup(user);
+            signedUpEmail.value=user.email;
             resetAllState();
             MessageModal({
                 icon: "success",
@@ -172,4 +189,36 @@ import { useRouter } from 'vue-router';
             
         }
     }
+    const signedUpEmail = ref("");
+async function sendVerificationEmail() {
+    try {
+        LoadingModal("Requesting verification email...");
+        const response = await apiSendVerificationEmail(signedUpEmail.value);
+        const { data } = response;
+        return MessageModal({
+            icon: "success",
+            title: "Success",
+            text: data.message,
+        });
+    } catch (error) {
+        const { response } = error;
+        if (!response) {
+            return MessageModal({
+                icon: "error",
+                title: "Error",
+                text: error.message,
+            });
+        }
+        const { data } = response;
+        return MessageModal({
+            icon: "error",
+            title: "Error",
+            text: data.message,
+        });
+    }
+}
+function resetSignedUpEmail() {
+    signedUpEmail.value = "";
+}
+
 </script>
