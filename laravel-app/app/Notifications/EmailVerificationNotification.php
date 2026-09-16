@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notification;
 use Carbon\Carbon;
 use URL;
 
-class EmailVerificationNotification extends Notification
+class EmailVerificationNotification extends Notification implements ShouldQueue
 {
     use Queueable;
      private ?string $callback_url;
