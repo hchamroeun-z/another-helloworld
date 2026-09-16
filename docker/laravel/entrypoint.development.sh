@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+# composer update
+# wait $!
 # composer install
 # wait $!
 php artisan key:generate
