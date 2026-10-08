@@ -23,4 +23,8 @@ Route::prefix('google')->group(function () {
 route::middleware('auth:sanctum')->group (function(){
     route::post('/signout',[AuthController::class,'signout']);
     route::get('/verify',[AuthController::class,'verify']);
+    Route::put('/create/password', [AuthController::class, 'createPassword']);
+    Route::put('/change/password', [AuthController::class, 'changePassword']);
+    Route::put('/update/profile-image', [AuthController::class, 'updateProfileImage']);
+    Route::delete('/delete/profile-image', [AuthController::class, 'deleteProfileImage']);
 });
