@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\GoogleOAuthController;
+use App\Http\Controllers\API\UserController;
 use Illuminate\Support\Facades\Route;
 
 route::post('/signup',[AuthController::class,'signup']);
@@ -27,4 +28,17 @@ route::middleware('auth:sanctum')->group (function(){
     Route::put('/change/password', [AuthController::class, 'changePassword']);
     Route::put('/update/profile-image', [AuthController::class, 'updateProfileImage']);
     Route::delete('/delete/profile-image', [AuthController::class, 'deleteProfileImage']);
+
+    route::middleware('admin')->prefix('manage')->group(function(){
+    Route::prefix('users')->group(function () {
+            Route::get('/', [UserController::class, 'getUsers']);
+            Route::get('/read/{id}', [UserController::class, 'readUser']);
+            Route::post('/create', [UserController::class, 'createUser']);
+            Route::put('/update/{id}', [UserController::class, 'updateUser']);
+            Route::delete('/delete/{id}', [UserController::class, 'deleteUser']);
+        });
+
 });
+
+});
+

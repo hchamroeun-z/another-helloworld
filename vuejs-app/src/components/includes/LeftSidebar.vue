@@ -95,6 +95,16 @@
                             <p>Dashboard</p>
                         </router-link>
                     </li>
+                      <li class="nav-item" v-if="userStore.isAdmin">
+                        <router-link
+                            :to="{ name: 'users' }"
+                            active-class="active"
+                            class="nav-link"
+                        >
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>Users</p>
+                        </router-link>
+                    </li>
                 </ul>
             </nav>
         </div>
