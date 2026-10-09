@@ -21,7 +21,7 @@ Route::prefix('google')->group(function () {
     Route::post('/oauth/exchange/token', [GoogleOAuthController::class, 'googleOAuthExchangeToken'])->middleware('auth:sanctum');
 });
 
-route::middleware('auth:sanctum')->group (function(){
+route::middleware(['auth:sanctum','enabled'])->group (function(){
     route::post('/signout',[AuthController::class,'signout']);
     route::get('/verify',[AuthController::class,'verify']);
     Route::put('/create/password', [AuthController::class, 'createPassword']);
@@ -36,6 +36,7 @@ route::middleware('auth:sanctum')->group (function(){
             Route::post('/create', [UserController::class, 'createUser']);
             Route::put('/update/{id}', [UserController::class, 'updateUser']);
             Route::delete('/delete/{id}', [UserController::class, 'deleteUser']);
+            Route::patch('/toggle-status/{id}', [UserController::class, 'toggleUserStatus']);
         });
 
 });

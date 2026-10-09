@@ -34,6 +34,10 @@ class GoogleOAuthController extends Controller
             ]
         );
 
+        if ($user->status === 'DISABLED') {
+            return redirect($callback_url . '?error=account_disabled');
+        }
+
         if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }

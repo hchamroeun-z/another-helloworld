@@ -65,6 +65,7 @@
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Level</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -79,6 +80,17 @@
                                     <td>{{ user.email }}</td>
                                     <td>{{ user.level }}</td>
                                     <td>
+                                        <span
+                                            class="badge"
+                                            :class="
+                                                user.status === 'ENABLED'
+                                                    ? 'badge-success'
+                                                    : 'badge-danger'
+                                            "
+                                            >{{ user.status }}</span
+                                        >
+                                    </td>
+                                    <td>
                                         <button
                                             class="mx-1 btn btn-sm btn-primary"
                                             @click="viewUser(user.id)"
@@ -90,6 +102,12 @@
                                             @click="removeUser(user.id)"
                                         >
                                             Delete
+                                        </button>
+                                         <button
+                                            class="mx-1 btn btn-sm btn-warning"
+                                            @click="toggleUserStatus(user.id)"
+                                        >
+                                            Toggle
                                         </button>
                                     </td>
                                 </tr>
@@ -406,7 +424,7 @@ import { CloseModal, LoadingModal, MessageModal } from '@/functions/swal';
 import { onMounted, reactive, ref, watch } from 'vue';
 import $ from "jquery";
 import Swal from "sweetalert2";
-import { apiCreateUser, apiDeleteUser, apiGetUsers, apiReadUser, apiUpdateUser } from '@/functions/api/user';
+import { apiCreateUser, apiDeleteUser, apiGetUsers, apiReadUser, apiToggleUserStatus, apiUpdateUser } from '@/functions/api/user';
 
     const userModal=ref(null);
     const users=ref([]);
@@ -590,6 +608,25 @@ async function removeUser(id) {
                 }
             }
         });
+}
+
+async function toggleUserStatus(id) {
+    try {
+        LoadingModal();
+        const response = await apiToggleUserStatus(id);
+        onUserUpdate(response.data.user);
+        return MessageModal({
+            icon: "success",
+            title: "Success",
+            text: response.data.message,
+        });
+    } catch (error) {
+        return MessageModal({
+            icon: "error",
+            title: "Error",
+            text: error.response?.data?.message || error.message
+        });
+    }
 }
 
 function onUserCreate(user) {
